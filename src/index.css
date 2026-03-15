@@ -1,0 +1,49 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: #f5f5f4; /* Off-white */
+    --foreground: #171717; /* Neutral 900 */
+    --card: #ffffff;
+    --card-foreground: #171717;
+    --border: #e5e5e5;
+    --primary: #f97316; /* Orange 500 */
+    --primary-foreground: #ffffff;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+  }
+
+  .dark {
+    --background: #0a0a0a; /* Black */
+    --foreground: #f5f5f4; /* Off-white */
+    --card: #171717;
+    --card-foreground: #f5f5f4;
+    --border: #262626;
+    --primary: #f97316; /* Orange 500 */
+    --primary-foreground: #ffffff;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+}
+
+/* Visible Grid Background Pattern */
+.bg-grid-pattern {
+  background-size: 100px 100px;
+  background-image: 
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+}
+
