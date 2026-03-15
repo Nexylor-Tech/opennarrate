@@ -6,20 +6,24 @@ import { MessageSquare, Share2, Bookmark, ChevronDown, Smile } from "lucide-reac
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
+import { useSession } from "../lib/auth-client";
 
 const REACTIONS = [
-  { emoji: "❤️", label: "heart" },
+  { emoji: "👍", label: "like" },
+  { emoji: "❤️", label: "love" },
   { emoji: "🔥", label: "fire" },
-  { emoji: "😂", label: "funny" },
   { emoji: "👏", label: "clap" },
-  { emoji: "🫡", label: "salute" },
+  { emoji: "😢", label: "sad" },
 ];
 
 export function BlogDetail() {
   const { id } = useParams<{ id: string }>();
+  const { data: session } = useSession();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [reaction, setReaction] = useState<string | null>(null);
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
+  const [totalReactions, setTotalReactions] = useState(0);
   const [isReactionOpen, setIsReactionOpen] = useState(false);
 
   useEffect(() => {
@@ -33,6 +37,20 @@ export function BlogDetail() {
     };
     loadBlog();
   }, [id]);
+
+  useEffect(() => {
+    const loadReactions = async () => {
+      if (blog?.id) {
+        const data = await api.getReactions(blog.id);
+        if (data) {
+          setReactionCounts(data.counts || {});
+          setTotalReactions(data.total || 0);
+          setReaction(data.myReaction || null);
+        }
+      }
+    };
+    loadReactions();
+  }, [blog?.id, session]);
 
   const headings = useMemo(() => {
     if (!blog?.content) return [];
@@ -48,15 +66,22 @@ export function BlogDetail() {
   }, [blog?.content]);
 
   if (loading) {
-    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" /></div>;
+    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-sm animate-spin" /></div>;
   }
 
   if (!blog) {
     return <div className="text-center py-20 text-2xl font-bold">Blog not found</div>;
   }
 
-  const mostGivenReaction = REACTIONS[(blog.id.length || 0) % REACTIONS.length].emoji;
-  const displayedReactions = Array.from(new Set([mostGivenReaction, reaction].filter(Boolean)));
+  const currentEmoji = reaction ? REACTIONS.find(r => r.label === reaction)?.emoji : null;
+  const topReactions = Object.entries(reactionCounts)
+    .filter(([_, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([label]) => REACTIONS.find(r => r.label === label)?.emoji)
+    .filter(Boolean);
+
+  const displayedReactions = Array.from(new Set([...topReactions, currentEmoji].filter(Boolean)));
 
   const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -71,18 +96,28 @@ export function BlogDetail() {
   return (
     <article className="max-w-6xl mx-auto pb-20">
       {/* Hero Section */}
-      <header className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16 pt-8">
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 text-[var(--primary)] font-medium text-sm tracking-wider uppercase">
-            <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
+      <header className="relative w-full h-[500px] lg:h-[600px] rounded-sm overflow-hidden shadow-xl mb-16 flex items-end border border-[var(--border)] mt-8">
+        <div className="absolute inset-0">
+          <img 
+            src={blog.coverImage} 
+            alt={blog.title} 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+        </div>
+
+        <div className="relative z-10 w-full p-8 md:p-12 space-y-4 md:space-y-6">
+          <div className="flex items-center gap-2 text-[var(--primary)] font-bold text-sm tracking-wider uppercase drop-shadow">
+            <span className="w-2 h-2 rounded-full bg-[var(--primary)] shadow-[0_0_8px_var(--primary)]" />
             {blog.category}
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-white drop-shadow-lg">
             {blog.title}
           </h1>
           
-          <p className="text-xl text-[var(--muted-foreground)] leading-relaxed">
+          <p className="text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl drop-shadow">
             {blog.excerpt}
           </p>
           
@@ -90,25 +125,16 @@ export function BlogDetail() {
             <img 
               src={blog.author.avatar} 
               alt={blog.author.name} 
-              className="w-12 h-12 rounded-full object-cover border-2 border-[var(--background)] shadow-sm"
+              className="w-12 h-12 rounded-full object-cover border-2 border-white/20 shadow-sm"
               referrerPolicy="no-referrer"
             />
             <div>
-              <div className="font-bold">{blog.author.name}</div>
-              <div className="text-sm text-[var(--muted-foreground)]">
+              <div className="font-bold text-white drop-shadow">{blog.author.name}</div>
+              <div className="text-sm text-white/70 drop-shadow">
                 Published {format(new Date(blog.createdAt), 'dd MMM yyyy')}
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-xl border border-[var(--border)]">
-          <img 
-            src={blog.coverImage} 
-            alt={blog.title} 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
         </div>
       </header>
 
@@ -155,17 +181,22 @@ export function BlogDetail() {
           <div className="flex items-center gap-6 mt-12 pt-8 border-t border-[var(--border)]">
             <div className="relative flex items-center">
               <button 
-                onClick={() => setIsReactionOpen(!isReactionOpen)}
-                className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium py-2"
+                onClick={() => {
+                  if (!session) return;
+                  setIsReactionOpen(!isReactionOpen);
+                }}
+                disabled={!session}
+                className={`flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium py-2 ${!session ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={!session ? "Log in to react" : "React to this post"}
               >
-                {reaction ? <span className="text-xl leading-none">{reaction}</span> : <Smile size={20} />} 
+                {currentEmoji ? <span className="text-xl leading-none">{currentEmoji}</span> : <Smile size={20} />} 
                 <span className="flex items-center gap-1.5 ml-1">
                   <span className="flex -space-x-1">
                     {displayedReactions.map((r, i) => (
-                      <span key={i} className="text-xs bg-[var(--muted)] border border-[var(--background)] w-6 h-6 flex items-center justify-center rounded-full z-10">{r}</span>
+                      <span key={i} className="text-xs bg-[var(--muted)] border border-[var(--background)] w-6 h-6 flex items-center justify-center rounded-full z-10">{r as string}</span>
                     ))}
                   </span>
-                  <span>{Number(blog.likes) + (reaction ? 1 : 0)}</span>
+                  <span>{totalReactions}</span>
                 </span>
               </button>
               
@@ -180,12 +211,26 @@ export function BlogDetail() {
                     {REACTIONS.map((r) => (
                       <button
                         key={r.label}
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          setReaction(r.emoji === reaction ? null : r.emoji);
+                          const newReaction = r.label === reaction ? null : r.label;
+                          setReaction(newReaction);
                           setIsReactionOpen(false);
+                          
+                          if (newReaction) {
+                            await api.addReaction(blog.id, newReaction);
+                          } else {
+                            await api.removeReaction(blog.id);
+                          }
+                          
+                          const data = await api.getReactions(blog.id);
+                          if (data) {
+                            setReactionCounts(data.counts || {});
+                            setTotalReactions(data.total || 0);
+                            setReaction(data.myReaction || null);
+                          }
                         }}
-                        className={`text-2xl hover:-translate-y-1 hover:scale-110 transition-all origin-bottom px-1 ${reaction === r.emoji ? 'scale-110 -translate-y-1' : ''}`}
+                        className={`text-2xl hover:-translate-y-1 hover:scale-110 transition-all origin-bottom px-1 ${reaction === r.label ? 'scale-110 -translate-y-1' : ''}`}
                         title={r.label}
                       >
                         {r.emoji}
@@ -205,4 +250,3 @@ export function BlogDetail() {
     </article>
   );
 }
-

@@ -32,7 +32,7 @@ export function Profile() {
         
         {/* Sidebar */}
         <aside className="w-full md:w-64 shrink-0">
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 sticky top-24">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-sm p-6 sticky top-24">
             <div className="flex flex-col items-center text-center mb-8">
               <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[var(--background)] shadow-md mb-4">
                 <img 
@@ -49,19 +49,19 @@ export function Profile() {
             <nav className="space-y-2">
               <button 
                 onClick={() => navigate('/add-blog')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-[var(--muted)]`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors hover:bg-[var(--muted)]`}
               >
                 <Edit3 size={18} /> Write Blog
               </button>
               <button 
                 onClick={() => setActiveTab('blogs')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'blogs' ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--muted)]'}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === 'blogs' ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--muted)]'}`}
               >
                 <BookOpen size={18} /> My Blogs
               </button>
               <button 
                 onClick={() => setActiveTab('settings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--muted)]'}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-[var(--primary)] text-white' : 'hover:bg-[var(--muted)]'}`}
               >
                 <Settings size={18} /> Settings
               </button>
@@ -70,7 +70,7 @@ export function Profile() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-8 min-h-[600px]">
+        <main className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-sm p-8 min-h-[600px]">
           {activeTab === 'blogs' && (
             <div>
               <h2 className="text-2xl font-bold mb-6">My Published Blogs</h2>
@@ -95,7 +95,7 @@ export function Profile() {
                   <select 
                     value={theme}
                     onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
-                    className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    className="px-4 py-2 rounded-sm border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   >
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -107,13 +107,13 @@ export function Profile() {
                 <h3 className="text-lg font-semibold border-b border-[var(--border)] pb-2">Profile Information</h3>
                 <div>
                   <label className="block text-sm font-medium mb-2">Display Name</label>
-                  <input type="text" defaultValue={user.name} className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]" />
+                  <input type="text" defaultValue={user.name} className="w-full px-4 py-2 rounded-sm border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Email</label>
-                  <input type="email" disabled defaultValue={user.email} className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] focus:outline-none cursor-not-allowed" />
+                  <input type="email" disabled defaultValue={user.email} className="w-full px-4 py-2 rounded-sm border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] focus:outline-none cursor-not-allowed" />
                 </div>
-                <button className="px-6 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-lg hover:opacity-90 transition-opacity">
+                <button className="px-6 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded-sm hover:opacity-90 transition-opacity">
                   Save Changes
                 </button>
               </div>
@@ -124,4 +124,3 @@ export function Profile() {
     </div>
   );
 }
-

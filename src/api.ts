@@ -1,4 +1,4 @@
-import type { Blog, User, Comment } from "./types";
+import type { Blog } from "./types";
 import { authClient } from "./lib/auth-client";
 
 const API_URL = "http://localhost:3000";
@@ -68,11 +68,11 @@ export const api = {
       return undefined;
     }
   },
-  getUserBlogs: async (userId: string): Promise<Blog[]> => {
+  getUserBlogs: async (): Promise<Blog[]> => {
     try {
       const { data: session } = await authClient.getSession();
       if (!session) return [];
-      const res = await fetch(`${API_URL}/blogs/mine`, {
+      await fetch(`${API_URL}/blogs/mine`, {
         headers: {
           // If using bearer token instead of cookies, would pass here. better-auth uses cookies by default.
         },
@@ -139,6 +139,27 @@ export const api = {
     }
 
     return { key, url: publicURL };
+  },
+  getReactions: async (slug: string): Promise<any> => {
+    try {
+      const res = await authClient.$fetch(`${API_URL}/reactions/${slug}`);
+      return res.data as any;
+    } catch {
+      return null;
+    }
+  },
+  addReaction: async (slug: string, reaction: string) => {
+    const res = await authClient.$fetch(`${API_URL}/reactions/${slug}`, {
+      method: "POST",
+      body: { reaction }
+    });
+    return res;
+  },
+  removeReaction: async (slug: string) => {
+    const res = await authClient.$fetch(`${API_URL}/reactions/${slug}`, {
+      method: "DELETE"
+    });
+    return res;
   }
 };
 

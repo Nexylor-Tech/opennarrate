@@ -73,7 +73,7 @@ export function Home() {
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <h2 className="text-3xl font-bold tracking-tight">Recent Blogs</h2>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] transition-colors text-sm font-medium">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-sm border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] transition-colors text-sm font-medium">
               <Filter size={16} /> Categories
             </button>
             <div className="relative">
@@ -81,7 +81,7 @@ export function Home() {
               <input 
                 type="text" 
                 placeholder="Search blogs..." 
-                className="pl-10 pr-4 py-2 rounded-full border border-[var(--border)] bg-[var(--card)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm w-full md:w-64"
+                className="pl-10 pr-4 py-2 rounded-sm border border-[var(--border)] bg-[var(--card)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm w-full md:w-64"
               />
             </div>
           </div>
@@ -102,7 +102,7 @@ export function Home() {
             <button className="flex items-center gap-1 text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
               Best of the {bestTimeframe} <ChevronDown size={16} />
             </button>
-            <div className="absolute top-full left-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+            <div className="absolute top-full left-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-sm shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button 
                 className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--muted)] transition-colors"
                 onClick={() => setBestTimeframe('month')}
@@ -128,4 +128,3 @@ export function Home() {
     </div>
   );
 }
-

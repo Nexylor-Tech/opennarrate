@@ -11,7 +11,7 @@ interface BlogCardProps {
 export function BlogCard({ blog, featured = false }: BlogCardProps) {
   if (featured) {
     return (
-      <Link to={`/blog/${blog.id}`} className="group block relative rounded-3xl overflow-hidden h-full">
+      <Link to={`/blog/${blog.id}`} className="group block relative rounded-sm overflow-hidden h-full">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
         <img 
           src={blog.coverImage} 
@@ -49,7 +49,7 @@ export function BlogCard({ blog, featured = false }: BlogCardProps) {
   }
 
   return (
-    <Link to={`/blog/${blog.id}`} className="group block h-full flex flex-col bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--primary)]/50 hover:shadow-lg hover:shadow-[var(--primary)]/5 transition-all duration-300">
+    <Link to={`/blog/${blog.id}`} className="group block h-full flex flex-col bg-[var(--card)] border border-[var(--border)] rounded-sm overflow-hidden hover:border-[var(--primary)]/50 hover:shadow-lg hover:shadow-[var(--primary)]/5 transition-all duration-300">
       <div className="relative aspect-video overflow-hidden">
         <img 
           src={blog.coverImage} 

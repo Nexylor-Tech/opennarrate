@@ -49,7 +49,7 @@ export function Login() {
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-[var(--card)] p-8 rounded-xl border border-[var(--border)] shadow-sm">
+      <div className="max-w-md w-full space-y-8 bg-[var(--card)] p-8 rounded-sm border border-[var(--border)] shadow-sm">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-[var(--foreground)]">
             {isLogin ? "Sign in to your account" : "Create an account"}
@@ -71,7 +71,7 @@ export function Login() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-md bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 />
               </div>
             )}
@@ -85,7 +85,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               />
             </div>
             <div>
@@ -98,7 +98,7 @@ export function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-md bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               />
             </div>
           </div>
@@ -106,7 +106,7 @@ export function Login() {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-[var(--background)] bg-[var(--foreground)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-sm shadow-sm text-sm font-medium text-[var(--background)] bg-[var(--foreground)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]"
             >
               {isLogin ? "Sign in" : "Sign up"}
             </button>
@@ -128,7 +128,7 @@ export function Login() {
           <div className="mt-6">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex justify-center py-2 px-4 border border-[var(--border)] rounded-md shadow-sm bg-[var(--background)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
+              className="w-full flex justify-center py-2 px-4 border border-[var(--border)] rounded-sm shadow-sm bg-[var(--background)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
             >
               Google
             </button>

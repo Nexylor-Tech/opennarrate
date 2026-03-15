@@ -54,7 +54,7 @@ export function Navbar() {
           ) : (
             <Link 
               to="/login"
-              className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity"
+              className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-sm bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity"
             >
               Log in / Sign up
             </Link>
@@ -64,4 +64,3 @@ export function Navbar() {
     </header>
   );
 }
-
