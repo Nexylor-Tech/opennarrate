@@ -27,5 +27,6 @@ export interface Blog {
   shares: number;
   comments: Comment[];
   featured?: boolean;
+  totalReactions?: number;
 }
 

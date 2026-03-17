@@ -25,6 +25,7 @@ export function BlogDetail() {
   const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
   const [totalReactions, setTotalReactions] = useState(0);
   const [isReactionOpen, setIsReactionOpen] = useState(false);
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadBlog = async () => {
@@ -65,6 +66,31 @@ export function BlogDetail() {
     });
   }, [blog?.content]);
 
+  useEffect(() => {
+    if (!headings.length) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveHeadingId(entry.target.id);
+        }
+      });
+    }, { rootMargin: '-10% 0px -80% 0px' });
+    
+    // Slight delay to ensure elements are rendered by ReactMarkdown
+    const timeoutId = setTimeout(() => {
+      headings.forEach((heading) => {
+        const element = document.getElementById(heading.id);
+        if (element) observer.observe(element);
+      });
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [headings, blog]);
+
   if (loading) {
     return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-sm animate-spin" /></div>;
   }
@@ -87,9 +113,10 @@ export function BlogDetail() {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       // Update URL hash without jumping
       window.history.pushState(null, '', `#${id}`);
+      setActiveHeadingId(id);
     }
   };
 
@@ -147,20 +174,23 @@ export function BlogDetail() {
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-4">Table of Contents</h3>
                 <nav className="space-y-1">
-                  {headings.map((heading, i) => (
-                    <a 
-                      key={i} 
-                      href={`#${heading.id}`}
-                      onClick={(e) => handleScrollToSection(e, heading.id)}
-                      className={`block py-2 text-sm font-medium border-b border-[var(--border)] flex items-center justify-between group ${i === 0 ? 'text-[var(--primary)]' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}
-                    >
-                      <span className="flex items-center gap-2">
-                        {i === 0 && <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />}
-                        {heading.text}
-                      </span>
-                      <ChevronDown size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
-                  ))}
+                  {headings.map((heading, i) => {
+                    const isActive = activeHeadingId === heading.id || (!activeHeadingId && i === 0);
+                    return (
+                      <a 
+                        key={i} 
+                        href={`#${heading.id}`}
+                        onClick={(e) => handleScrollToSection(e, heading.id)}
+                        className={`block py-2 text-sm font-medium border-b border-[var(--border)] flex items-center justify-between group transition-colors ${isActive ? 'text-[var(--primary)]' : 'text-[var(--foreground)] hover:text-[var(--primary)]'}`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />}
+                          <span className={!isActive ? "ml-3" : ""}>{heading.text}</span>
+                        </span>
+                        <ChevronDown size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    );
+                  })}
                 </nav>
               </div>
             )}

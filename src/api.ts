@@ -24,23 +24,43 @@ function mapBlog(data: any): Blog {
     shares: 0,
     comments: [],
     featured: false,
+    totalReactions: data.totalReactions ?? data.reactions?.length ?? 0,
   };
 }
 
 export const api = {
-  getFeaturedBlogs: async (): Promise<Blog[]> => {
+  getCategories: async (): Promise<{slug: string, label: string}[]> => {
     try {
-      const res = await fetch(`${API_URL}/blogs?published=true`);
+      const res = await fetch(`${API_URL}/blogs/categories`);
       if (!res.ok) return [];
       const json = await res.json();
-      return (json.data || []).map(mapBlog);
+      return json.data || [];
     } catch {
       return [];
     }
   },
-  getRecentBlogs: async (): Promise<Blog[]> => {
+  getFeaturedBlogs: async (): Promise<{category: string, blog: Blog | null}[]> => {
     try {
-      const res = await fetch(`${API_URL}/blogs?published=true`);
+      const res = await authClient.$fetch(`${API_URL}/blogs/featured`);
+      if (res.error || !res.data) return [];
+      const payload = res.data as any;
+      console.log("Featured blogs payload:", payload);
+      const dataArray = payload.data || [];
+      return dataArray.map((item: any) => ({
+        category: item.category,
+        blog: item.blog ? mapBlog(item.blog) : null
+      }));
+    } catch (err) {
+      console.error("Error fetching featured blogs", err);
+      return [];
+    }
+  },
+  getRecentBlogs: async (category?: string): Promise<Blog[]> => {
+    try {
+      const url = new URL(`${API_URL}/blogs`);
+      url.searchParams.append("published", "true");
+      if (category) url.searchParams.append("category", category);
+      const res = await fetch(url.toString());
       if (!res.ok) return [];
       const json = await res.json();
       return (json.data || []).map(mapBlog);

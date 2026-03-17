@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { useSession, authClient } from "../lib/auth-client";
-import { Image as ImageIcon, Eye, Edit2 } from "lucide-react";
+import { Image as ImageIcon, Eye, Edit2, ChevronLeft, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import { format } from "date-fns";
@@ -31,6 +31,7 @@ export function AddBlog() {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
+  const [previewCollapsed, setPreviewCollapsed] = useState(true); // Start collapsed by default on desktop
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export function AddBlog() {
 
     try {
       let blogId = editId;
+      let redirectSlug = editId; // Used for routing since /:slug is the endpoint
 
       if (editId) {
         // Update existing blog
@@ -116,6 +118,7 @@ export function AddBlog() {
           throw new Error("Invalid response from server");
         }
         blogId = newBlog.id;
+        redirectSlug = newBlog.slug;
       }
 
       let patchData: any = {};
@@ -155,7 +158,7 @@ export function AddBlog() {
       }
 
       // Navigate to the new blog
-      navigate(`/blog/${blogId}`);
+      navigate(`/blog/${redirectSlug}`);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
     } finally {
@@ -164,7 +167,7 @@ export function AddBlog() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4">
+    <div className="max-w-4xl mx-auto py-12 px-4 relative">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">{editId ? "Edit Blog" : "Write a New Blog"}</h1>
         <button
@@ -178,8 +181,8 @@ export function AddBlog() {
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        <div className={showPreviewMobile ? "hidden lg:block" : "block"}>
+      <div className="w-full transition-all duration-500">
+        <div className={`w-full ${showPreviewMobile ? 'hidden lg:block' : 'block'}`}>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-base font-medium mb-1">Title</label>
@@ -277,65 +280,148 @@ export function AddBlog() {
           </form>
         </div>
 
-        {/* Preview Pane */}
-        <div className={`border border-[var(--border)] rounded-sm p-6 lg:p-8 bg-[var(--card)] sticky top-24 h-fit max-h-[80vh] overflow-y-auto ${showPreviewMobile ? "block" : "hidden lg:block"}`}>
-          <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-6 flex items-center gap-2">
-            <Eye size={14} /> Preview
-          </h2>
-
-          <article className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
-            <header className="relative w-full aspect-video rounded-sm overflow-hidden shadow-xl mb-8 flex items-end border border-[var(--border)] bg-neutral-800">
-              <div className="absolute inset-0">
-                {coverImagePreview && (
-                  <img
-                    src={coverImagePreview}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover !m-0"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-              </div>
-
-              <div className="relative z-10 w-full p-6 space-y-4">
-                <div className="inline-block px-4 py-2 mb-2 text-xs font-bold uppercase tracking-wider bg-[var(--primary)] text-white rounded-sm  ">
-                  {CATEGORIES.find(c => c.slug === category)?.label || category}
+        {/* Sliding Side Preview (Desktop only) */}
+        <div 
+          className={`fixed top-24 right-0 h-[calc(100vh-6rem)] z-40 transition-transform duration-500 ease-in-out hidden lg:flex ${
+            previewCollapsed ? 'translate-x-full' : 'translate-x-0'
+          }`}
+        >
+          {/* Toggle Tab */}
+          <button 
+            onClick={() => setPreviewCollapsed(!previewCollapsed)}
+            className={`absolute top-1/2 -translate-y-1/2 -left-12 flex flex-col items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors w-12 gap-2 bg-transparent shadow-none border-none`}
+            title={previewCollapsed ? "Open Preview" : "Close Preview"}
+          >
+             {previewCollapsed ? <ChevronLeft size={28} strokeWidth={2.5} /> : <ChevronRight size={28} strokeWidth={2.5} />}
+             <div className="text-xs font-bold tracking-[0.2em] uppercase origin-center" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+               Preview
+             </div>
+          </button>
+          
+          <div className="w-[800px] h-full bg-[var(--card)] border-l border-y border-[var(--border)] shadow-2xl rounded-l-md overflow-y-auto p-8 pt-4 relative flex flex-col">
+            <article className="prose prose-sm md:prose-base dark:prose-invert max-w-none flex-grow mt-4">
+              <header className="relative w-full aspect-video rounded-sm overflow-hidden shadow-sm border border-[var(--border)] bg-white dark:bg-neutral-800 mb-8 flex items-end">
+                <div className="absolute inset-0">
+                  {coverImagePreview ? (
+                    <>
+                      <img
+                        src={coverImagePreview}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover !m-0"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-[var(--background)] dark:bg-neutral-800" />
+                  )}
                 </div>
-                <h1 className="text-2xl md:text-3xl font-black leading-[1.1] tracking-tight text-white drop-shadow-lg !mb-0">
-                  {title || <span className="opacity-50">Your Blog Title</span>}
-                </h1>
 
-                {excerpt && (
-                  <p className="text-base text-white/90 leading-relaxed max-w-3xl drop-shadow !mt-2 !mb-0">
-                    {excerpt}
-                  </p>
-                )}
+                <div className="relative z-10 w-full p-6 space-y-4">
+                  <div className="inline-block px-4 py-2 mb-2 text-xs font-bold uppercase tracking-wider bg-[var(--primary)] text-white rounded-sm  ">
+                    {CATEGORIES.find(c => c.slug === category)?.label || category}
+                  </div>
+                  <h1 className={`text-2xl md:text-3xl font-black leading-[1.1] tracking-tight drop-shadow-sm !mb-0 ${coverImagePreview ? 'text-white drop-shadow-lg' : 'text-[var(--foreground)]'}`}>
+                    {title || <span className="opacity-50">Your Blog Title</span>}
+                  </h1>
 
-                <div className="flex items-center gap-3 ">
-                  <img
-                    src={session?.user?.image || "https://picsum.photos/seed/default/100/100"}
-                    alt="Author"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-white/20 shadow-sm !m-0"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div>
-                    <div className="font-bold text-white drop-shadow text-sm leading-tight">{session?.user?.name || "Author Name"}</div>
-                    <div className="text-xs text-white/70 drop-shadow">
-                      Published {format(new Date(), 'dd MMM yyyy')}
+                  {excerpt && (
+                    <p className={`text-base leading-relaxed max-w-3xl drop-shadow-sm !mt-2 !mb-0 ${coverImagePreview ? 'text-white/90 drop-shadow' : 'text-[var(--muted-foreground)]'}`}>
+                      {excerpt}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-3 ">
+                    <img
+                      src={session?.user?.image || "https://picsum.photos/seed/default/100/100"}
+                      alt="Author"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[var(--border)] shadow-sm !m-0"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div>
+                      <div className={`font-bold text-sm leading-tight drop-shadow-sm ${coverImagePreview ? 'text-white drop-shadow' : 'text-[var(--foreground)]'}`}>{session?.user?.name || "Author Name"}</div>
+                      <div className={`text-xs drop-shadow-sm ${coverImagePreview ? 'text-white/70 drop-shadow' : 'text-[var(--muted-foreground)]'}`}>
+                        Published {format(new Date(), 'dd MMM yyyy')}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </header>
+              </header>
 
-            <div className=" prose-lg text-[var(--foreground)]/90 leading-relaxed">
-              {content ? (
-                <ReactMarkdown rehypePlugins={[rehypeSlug]}>{content}</ReactMarkdown>
-              ) : (
-                <p className="text-[var(--muted-foreground)] italic opacity-50">Your markdown content will appear here...</p>
-              )}
-            </div>
-          </article>
+              <div className=" prose-lg text-[var(--foreground)]/90 leading-relaxed pb-20">
+                {content ? (
+                  <ReactMarkdown rehypePlugins={[rehypeSlug]}>{content}</ReactMarkdown>
+                ) : (
+                  <p className="text-[var(--muted-foreground)] italic opacity-50">Your markdown content will appear here...</p>
+                )}
+              </div>
+            </article>
+          </div>
         </div>
+
+        {/* Mobile Preview Block */}
+        <div className={`lg:hidden border border-[var(--border)] rounded-sm p-6 bg-[var(--card)] ${showPreviewMobile ? 'block' : 'hidden'}`}>
+           <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-6 flex items-center gap-2">
+              <Eye size={14} /> Preview
+            </h2>
+
+            <article className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
+              <header className="relative w-full aspect-video rounded-sm overflow-hidden shadow-sm border border-[var(--border)] bg-white dark:bg-neutral-800 mb-8 flex items-end">
+                <div className="absolute inset-0">
+                  {coverImagePreview ? (
+                    <>
+                      <img
+                        src={coverImagePreview}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover !m-0"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-[var(--background)] dark:bg-neutral-800" />
+                  )}
+                </div>
+
+                <div className="relative z-10 w-full p-6 space-y-4">
+                  <div className="inline-block px-4 py-2 mb-2 text-xs font-bold uppercase tracking-wider bg-[var(--primary)] text-white rounded-sm  ">
+                    {CATEGORIES.find(c => c.slug === category)?.label || category}
+                  </div>
+                  <h1 className={`text-2xl md:text-3xl font-black leading-[1.1] tracking-tight drop-shadow-sm !mb-0 ${coverImagePreview ? 'text-white drop-shadow-lg' : 'text-[var(--foreground)]'}`}>
+                    {title || <span className="opacity-50">Your Blog Title</span>}
+                  </h1>
+
+                  {excerpt && (
+                    <p className={`text-base leading-relaxed max-w-3xl drop-shadow-sm !mt-2 !mb-0 ${coverImagePreview ? 'text-white/90 drop-shadow' : 'text-[var(--muted-foreground)]'}`}>
+                      {excerpt}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-3 ">
+                    <img
+                      src={session?.user?.image || "https://picsum.photos/seed/default/100/100"}
+                      alt="Author"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[var(--border)] shadow-sm !m-0"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div>
+                      <div className={`font-bold text-sm leading-tight drop-shadow-sm ${coverImagePreview ? 'text-white drop-shadow' : 'text-[var(--foreground)]'}`}>{session?.user?.name || "Author Name"}</div>
+                      <div className={`text-xs drop-shadow-sm ${coverImagePreview ? 'text-white/70 drop-shadow' : 'text-[var(--muted-foreground)]'}`}>
+                        Published {format(new Date(), 'dd MMM yyyy')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <div className=" prose-lg text-[var(--foreground)]/90 leading-relaxed">
+                {content ? (
+                  <ReactMarkdown rehypePlugins={[rehypeSlug]}>{content}</ReactMarkdown>
+                ) : (
+                  <p className="text-[var(--muted-foreground)] italic opacity-50">Your markdown content will appear here...</p>
+                )}
+              </div>
+            </article>
+        </div>
+
       </div>
     </div>
   );

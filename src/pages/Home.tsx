@@ -1,39 +1,47 @@
 import { useState, useEffect } from "react";
 import { BlogCard } from "../components/BlogCard";
+import { FeaturedCard } from "../components/FeaturedCard";
 import { api } from "../api";
 import type { Blog } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Filter } from "lucide-react";
 
 export function Home() {
-  const [featuredBlogs, setFeaturedBlogs] = useState<Blog[]>([]);
+  const [featuredBlogs, setFeaturedBlogs] = useState<{category: string, blog: Blog | null}[]>([]);
   const [recentBlogs, setRecentBlogs] = useState<Blog[]>([]);
   const [bestBlogs, setBestBlogs] = useState<Blog[]>([]);
+  const [categories, setCategories] = useState<{slug: string, label: string}[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [bestTimeframe, setBestTimeframe] = useState<'month' | 'year'>('month');
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
-      const [featured, recent, best] = await Promise.all([
+      const [featured, recent, best, cats] = await Promise.all([
         api.getFeaturedBlogs(),
-        api.getRecentBlogs(),
-        api.getBestBlogs(bestTimeframe)
+        api.getRecentBlogs(selectedCategory || undefined),
+        api.getBestBlogs(bestTimeframe),
+        api.getCategories()
       ]);
       setFeaturedBlogs(featured);
       setRecentBlogs(recent);
       setBestBlogs(best);
+      setCategories(cats);
     };
     loadData();
-  }, [bestTimeframe]);
+  }, [bestTimeframe, selectedCategory]);
+
+  const validFeaturedBlogs = featuredBlogs.filter(f => f.blog !== null) as {category: string, blog: Blog}[];
 
   // Auto-sliding for featured blogs
   useEffect(() => {
-    if (featuredBlogs.length <= 1) return;
+    if (validFeaturedBlogs.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentFeaturedIndex((prev) => (prev + 1) % featuredBlogs.length);
+      setCurrentFeaturedIndex((prev) => (prev + 1) % validFeaturedBlogs.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [featuredBlogs.length]);
+  }, [validFeaturedBlogs.length]);
 
   return (
     <div className="space-y-20 pb-10">
@@ -41,7 +49,7 @@ export function Home() {
       <section className="pt-8">
         <div className="relative min-h-[400px]">
           <AnimatePresence mode="wait">
-            {featuredBlogs.length > 0 && (
+            {validFeaturedBlogs.length > 0 && (
               <motion.div
                 key={currentFeaturedIndex}
                 initial={{ opacity: 0, x: 20 }}
@@ -49,35 +57,66 @@ export function Home() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <BlogCard blog={featuredBlogs[currentFeaturedIndex]} featured />
+                <FeaturedCard blog={validFeaturedBlogs[currentFeaturedIndex].blog} />
               </motion.div>
             )}
           </AnimatePresence>
           
           {/* Slider Indicators */}
-          <div className="flex justify-center gap-2 mt-6">
-            {featuredBlogs.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentFeaturedIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${idx === currentFeaturedIndex ? 'w-6 bg-[var(--primary)]' : 'bg-[var(--border)] hover:bg-[var(--muted-foreground)]'}`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+          {validFeaturedBlogs.length > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              {validFeaturedBlogs.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentFeaturedIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${idx === currentFeaturedIndex ? 'w-6 bg-[var(--primary)]' : 'bg-[var(--border)] hover:bg-[var(--muted-foreground)]'}`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Recent Blogs */}
       <section>
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <h2 className="text-3xl font-bold tracking-tight  ">Recent Blogs</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Recent Blogs</h2>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-5 py-3 rounded-sm border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] transition-colors text-base font-medium  ">
-              <Filter size={16} className="" /> Categories
-            </button>
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -/2 text-[var(--muted-foreground)]" />
+              <button 
+                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                className="flex items-center gap-2 px-5 py-3 rounded-sm border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] transition-colors text-base font-medium"
+              >
+                <Filter size={16} /> 
+                {selectedCategory ? categories.find(c => c.slug === selectedCategory)?.label : 'Categories'}
+              </button>
+              
+              {isCategoriesOpen && (
+                <>
+                  <div className="fixed inset-0 z-0" onClick={() => setIsCategoriesOpen(false)} />
+                  <div className="absolute top-full right-0 md:left-0 mt-2 w-48 bg-[var(--card)] border border-[var(--border)] rounded-sm shadow-lg z-10 overflow-hidden">
+                    <button 
+                      className={`w-full text-left px-5 py-3 text-base hover:bg-[var(--muted)] transition-colors ${!selectedCategory ? 'bg-[var(--muted)] font-bold' : ''}`}
+                      onClick={() => { setSelectedCategory(null); setIsCategoriesOpen(false); }}
+                    >
+                      All Categories
+                    </button>
+                    {categories.map((cat) => (
+                      <button 
+                        key={cat.slug}
+                        className={`w-full text-left px-5 py-3 text-base hover:bg-[var(--muted)] transition-colors border-t border-[var(--border)] ${selectedCategory === cat.slug ? 'bg-[var(--muted)] font-bold' : ''}`}
+                        onClick={() => { setSelectedCategory(cat.slug); setIsCategoriesOpen(false); }}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <input 
                 type="text" 
                 placeholder="Search blogs..." 
