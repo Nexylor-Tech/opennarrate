@@ -121,7 +121,7 @@ export function BlogDetail() {
             {blog.excerpt}
           </p>
           
-          <div className="flex items-center gap-4 pt-4">
+          <div className="flex items-center gap-4 ">
             <img 
               src={blog.author.avatar} 
               alt={blog.author.name} 
@@ -174,11 +174,11 @@ export function BlogDetail() {
 
         {/* Main Content */}
         <div className="lg:col-span-9 max-w-none">
-          <div className="prose prose-lg dark:prose-invert max-w-none font-serif text-lg leading-relaxed text-[var(--foreground)]/90">
+          <div className="prose prose-lg dark:prose-invert max-w-none text-lg leading-relaxed text-[var(--foreground)]/90">
             <ReactMarkdown rehypePlugins={[rehypeSlug]}>{blog.content}</ReactMarkdown>
           </div>
           
-          <div className="flex items-center gap-6 mt-12 pt-8 border-t border-[var(--border)]">
+          <div className="flex items-center gap-8 mt-12 pt-8 border-t border-[var(--border)]">
             <div className="relative flex items-center">
               <button 
                 onClick={() => {
@@ -189,14 +189,16 @@ export function BlogDetail() {
                 className={`flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium py-2 ${!session ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={!session ? "Log in to react" : "React to this post"}
               >
-                {currentEmoji ? <span className="text-xl leading-none">{currentEmoji}</span> : <Smile size={20} />} 
-                <span className="flex items-center gap-1.5 ml-1">
+                {currentEmoji ? <span className="text-xl  flex items-center justify-center h-5">{currentEmoji}</span> : <Smile size={20} />} 
+                <span className="flex items-center gap-2 ml-1">
                   <span className="flex -space-x-1">
                     {displayedReactions.map((r, i) => (
-                      <span key={i} className="text-xs bg-[var(--muted)] border border-[var(--background)] w-6 h-6 flex items-center justify-center rounded-full z-10">{r as string}</span>
+                      <span key={i} className="text-[10px] bg-[var(--muted)] border border-[var(--background)] w-6 h-6 flex items-center justify-center rounded-full z-10 font-sans pb-[2px]">
+                        {r as string}
+                      </span>
                     ))}
                   </span>
-                  <span>{totalReactions}</span>
+                  <span className=" ">{totalReactions}</span>
                 </span>
               </button>
               
@@ -230,7 +232,7 @@ export function BlogDetail() {
                             setReaction(data.myReaction || null);
                           }
                         }}
-                        className={`text-2xl hover:-translate-y-1 hover:scale-110 transition-all origin-bottom px-1 ${reaction === r.label ? 'scale-110 -translate-y-1' : ''}`}
+                        className={`text-2xl hover:-translate-y-1 hover:scale-110 transition-all origin-bottom px-1 flex items-center justify-center font-sans pb-[2px] ${reaction === r.label ? 'scale-110 -translate-y-1' : ''}`}
                         title={r.label}
                       >
                         {r.emoji}
@@ -242,7 +244,7 @@ export function BlogDetail() {
             </div>
 
             <button className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium py-2">
-              <MessageSquare size={20} /> {blog.comments.length} Comments
+              <MessageSquare size={20} /> <span className=" ">{blog.comments.length} Comments</span>
             </button>
           </div>
         </div>

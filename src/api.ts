@@ -17,10 +17,10 @@ function mapBlog(data: any): Blog {
       avatar: data.author?.image || "https://picsum.photos/seed/orlando/100/100",
       bio: "Writer.",
     },
-    category: "Technology", // Backend doesn't support categories yet
+    category: data.category || "Technology",
     createdAt: data.createdAt || new Date().toISOString(),
     views: Math.floor(Math.random() * 1000), // Mock
-    likes: data.reactionsCount?.heart || 0,
+    likes: data.totalReactions ?? data.reactions?.length ?? (data.reactionsCount?.heart || 0),
     shares: 0,
     comments: [],
     featured: false,
@@ -72,18 +72,15 @@ export const api = {
     try {
       const { data: session } = await authClient.getSession();
       if (!session) return [];
-      await fetch(`${API_URL}/blogs/mine`, {
-        headers: {
-          // If using bearer token instead of cookies, would pass here. better-auth uses cookies by default.
-        },
-        credentials: "omit" // better-auth handles auth via its client if using token, but it usually uses cookies or sets headers. Actually, let's use authClient.$fetch
-      }); // wait, better-auth might use cookies. Let's just use standard fetch with include if they are on same origin. Let's just use `authClient.$fetch` for authenticated calls.
-      return []; // Just return empty for now, or implement authClient.$fetch
+      const res = await authClient.$fetch(`${API_URL}/blogs/mine`);
+      if (res.error) return [];
+      const json = res.data as any;
+      return (json.data || []).map(mapBlog);
     } catch {
       return [];
     }
   },
-  createBlog: async (data: { title: string, content: string, excerpt?: string, published?: boolean, coverImageKey?: string, coverImageUrl?: string }) => {
+  createBlog: async (data: { title: string, content: string, category: string, excerpt?: string, published?: boolean, coverImageKey?: string, coverImageUrl?: string }) => {
     const res = await authClient.$fetch(`${API_URL}/blogs/`, {
        method: "POST",
        body: data

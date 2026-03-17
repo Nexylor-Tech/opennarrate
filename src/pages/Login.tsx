@@ -71,7 +71,7 @@ export function Login() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  className="w-full px-4 py-3 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] "
                 />
               </div>
             )}
@@ -85,7 +85,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] "
               />
             </div>
             <div>
@@ -98,7 +98,7 @@ export function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] "
               />
             </div>
           </div>
@@ -106,7 +106,7 @@ export function Login() {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-sm shadow-sm text-sm font-medium text-[var(--background)] bg-[var(--foreground)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]"
+              className="w-full flex justify-center py-4 px-4 border border-transparent rounded-sm shadow-sm text-base font-medium text-[var(--background)] bg-[var(--foreground)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]  "
             >
               {isLogin ? "Sign in" : "Sign up"}
             </button>
@@ -119,7 +119,7 @@ export function Login() {
               <div className="w-full border-t border-[var(--border)]" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--card)] text-[var(--muted-foreground)]">
+              <span className="px-2 bg-[var(--card)] text-[var(--muted-foreground)] ">
                 Or continue with
               </span>
             </div>
@@ -128,17 +128,17 @@ export function Login() {
           <div className="mt-6">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex justify-center py-2 px-4 border border-[var(--border)] rounded-sm shadow-sm bg-[var(--background)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
+              className="w-full flex justify-center py-4 px-4 border border-[var(--border)] rounded-sm shadow-sm bg-[var(--background)] text-base font-medium text-[var(--foreground)] hover:bg-[var(--muted)]  "
             >
               Google
             </button>
           </div>
         </div>
 
-        <div className="text-center mt-4">
+        <div className="text-center mt-6">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm font-medium text-[var(--primary)] hover:underline"
+            className="text-base font-medium text-[var(--primary)] hover:underline "
           >
             {isLogin
               ? "Don't have an account? Sign up"
