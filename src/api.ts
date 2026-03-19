@@ -177,6 +177,36 @@ export const api = {
       method: "DELETE"
     });
     return res;
+  },
+  getComments: async (slug: string, page = 1, limit = 20) => {
+    try {
+      const res = await fetch(`${API_URL}/comments/${slug}?page=${page}&limit=${limit}`);
+      if (!res.ok) return { data: [], total: 0 };
+      const json = await res.json();
+      return json;
+    } catch {
+      return { data: [], total: 0 };
+    }
+  },
+  addComment: async (slug: string, content: string) => {
+    const res = await authClient.$fetch(`${API_URL}/comments/${slug}`, {
+      method: "POST",
+      body: { content }
+    });
+    return res;
+  },
+  updateComment: async (slug: string, commentId: string, content: string) => {
+    const res = await authClient.$fetch(`${API_URL}/comments/${slug}/${commentId}`, {
+      method: "PATCH",
+      body: { content }
+    });
+    return res;
+  },
+  deleteComment: async (slug: string, commentId: string) => {
+    const res = await authClient.$fetch(`${API_URL}/comments/${slug}/${commentId}`, {
+      method: "DELETE"
+    });
+    return res;
   }
 };
 

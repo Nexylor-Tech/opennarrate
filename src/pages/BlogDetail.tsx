@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
-import type { Blog } from "../types";
+import type { Blog, Comment } from "../types";
 import { MessageSquare, Share2, Bookmark, ChevronDown, Smile } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import { useSession } from "../lib/auth-client";
+import { CommentCard } from "../components/CommentCard";
+import { CommentAdd } from "../components/CommentAdd";
 
 const REACTIONS = [
   { emoji: "👍", label: "like" },
@@ -26,6 +28,53 @@ export function BlogDetail() {
   const [totalReactions, setTotalReactions] = useState(0);
   const [isReactionOpen, setIsReactionOpen] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [totalComments, setTotalComments] = useState(0);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      if (blog?.id) {
+        const res = await api.getComments(blog.id);
+        if (res && res.data) {
+          setComments(res.data);
+          setTotalComments(res.total || res.data.length);
+        }
+      }
+    };
+    loadComments();
+  }, [blog?.id]);
+
+  const handleAddComment = async (content: string) => {
+    if (!blog) return;
+    const res = await api.addComment(blog.id, content);
+    if (!res.error && res.data) {
+      const newComment = (res.data as any).data;
+      if (newComment) {
+        setComments((prev) => [newComment, ...prev]);
+        setTotalComments((prev) => prev + 1);
+      }
+    }
+  };
+
+  const handleEditComment = async (commentId: string, content: string) => {
+    if (!blog) return;
+    const res = await api.updateComment(blog.id, commentId, content);
+    if (!res.error && res.data) {
+      const updated = (res.data as any).data;
+      if (updated) {
+        setComments((prev) => prev.map((c) => (c.id === commentId ? updated : c)));
+      }
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!blog) return;
+    const res = await api.deleteComment(blog.id, commentId);
+    if (!res.error) {
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setTotalComments((prev) => prev - 1);
+    }
+  };
 
   useEffect(() => {
     const loadBlog = async () => {
@@ -274,8 +323,38 @@ export function BlogDetail() {
             </div>
 
             <button className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors font-medium py-2">
-              <MessageSquare size={20} /> <span className=" ">{blog.comments.length} Comments</span>
+              <MessageSquare size={20} /> <span className=" ">{totalComments} Comments</span>
             </button>
+          </div>
+
+          {/* Comments Section */}
+          <div className="mt-12 pt-8 border-t border-[var(--border)]">
+            <h3 className="text-2xl font-bold mb-6">Comments ({totalComments})</h3>
+            
+            {session ? (
+              <CommentAdd onSubmit={handleAddComment} userAvatar={session.user.image || undefined} />
+            ) : (
+              <div className="p-4 border border-[var(--border)] bg-[var(--card)] rounded-sm text-center text-[var(--muted-foreground)] mb-8">
+                Please log in to leave a comment.
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {comments.map((comment) => (
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  currentUserId={session?.user?.id}
+                  onEdit={handleEditComment}
+                  onDelete={handleDeleteComment}
+                />
+              ))}
+              {comments.length === 0 && (
+                <div className="text-center text-[var(--muted-foreground)] py-8">
+                  No comments yet. Be the first to share your thoughts!
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

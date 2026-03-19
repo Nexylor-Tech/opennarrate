@@ -7,10 +7,14 @@ export interface User {
 
 export interface Comment {
   id: string;
-  author: User;
   content: string;
   createdAt: string;
-  likes: number;
+  authorId: string;
+  author: {
+    id: string;
+    name: string;
+    image?: string;
+  };
 }
 
 export interface Blog {
